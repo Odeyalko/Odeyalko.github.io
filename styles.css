@@ -145,12 +145,38 @@ button.loading .loader {
     color: var(--accent);
 }
 
+.tips {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.tips a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.tips a:hover {
+    text-decoration: underline;
+}
+
 .sku-value {
     font-size: 2.2rem;
     font-weight: 700;
     color: var(--primary);
     letter-spacing: 1px;
     margin-bottom: 10px;
+}
+
+.sku-link a {
+    font-size: 1rem;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.sku-link a:hover {
+    color: var(--primary);
 }
 
 .error-message {
