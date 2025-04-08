@@ -1,8 +1,8 @@
 const PROXIES = [
-    'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?',
-    'https://proxy.cors.sh/',
-    'https://api.codetabs.com/v1/proxy?quest='
+    'https://api.allorigins.win/raw?url=',
+    'https://webproxy.101011.xyz/',
+    'https://proxy.cors.sh/'
 ];
 
 async function analyzeProduct() {
@@ -11,41 +11,40 @@ async function analyzeProduct() {
     const resultCard = document.getElementById('result');
     const btn = document.querySelector('button');
     
-    // Сброс состояния
     urlInput.disabled = true;
     btn.classList.add('loading');
     resultCard.className = 'result-card';
     resultContent.innerHTML = '';
 
     try {
-        // Валидация URL
         const url = urlInput.value.trim();
-        if (!isValidLamodaUrl(url)) {
-            throw new Error('Некорректный URL. Пример правильной ссылки:\nhttps://www.lamoda.ru/p/MP002XW1G0ZJ/...');
+        if (!/^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]{10,}\//.test(url)) {
+            throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/MP002XW1G0ZJ/...');
         }
 
-        // Получение данных
-        const html = await fetchThroughProxies(url);
+        const html = await fetchWithRetry(url);
         const sku = extractSKU(html);
         
-        // Отображение результата
         resultCard.classList.add('success');
         resultContent.innerHTML = `
-            <div class="sku-display">${sku}</div>
-            <div class="sku-path">window.__NUXT__.payload.product.sku_supplier</div>
+            <div class="sku-value">${sku}</div>
+            <div class="sku-source">Источник: API Lamoda</div>
         `;
 
     } catch (error) {
         resultCard.classList.add('error');
         resultContent.innerHTML = `
-            <div class="error-message">${error.message}</div>
-            <div class="error-instructions">
-                <h3>Решение проблем:</h3>
-                <ul>
-                    <li>Проверьте доступность сайта</li>
-                    <li>Используйте VPN при необходимости</li>
-                    <li>Свяжитесь с поддержкой</li>
-                </ul>
+            <div class="error-header">${error.message}</div>
+            <div class="error-debug" style="display:none">${error.debug || ''}</div>
+            <button onclick="toggleDebugInfo()" class="debug-btn">Техническая информация</button>
+            <div class="manual-guide">
+                <h3>Как найти вручную:</h3>
+                <ol>
+                    <li>Откройте DevTools (F12 → Вкладка Network)</li>
+                    <li>Обновите страницу (Ctrl+R)</li>
+                    <li>Ищите запросы с названием товара</li>
+                    <li>Во вкладке Preview найдите "sku_supplier"</li>
+                </ol>
             </div>
         `;
     } finally {
@@ -54,35 +53,68 @@ async function analyzeProduct() {
     }
 }
 
-function isValidLamodaUrl(url) {
-    return /^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]{10,}\//.test(url);
-}
+async function fetchWithRetry(url) {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 20000);
 
-async function fetchThroughProxies(url) {
-    for (const proxy of PROXIES) {
+    for (let i = 0; i < PROXIES.length; i++) {
         try {
-            const response = await fetch(proxy + encodeURIComponent(url), {
+            const response = await fetch(PROXIES[i] + encodeURIComponent(url), {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-                    'Referer': 'https://www.lamoda.ru/'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+                    'Referer': 'https://www.lamoda.ru/',
+                    'Accept': 'text/html,application/xhtml+xml',
+                    'Accept-Language': 'ru-RU,ru;q=0.9'
                 },
-                timeout: 10000
+                signal: controller.signal
             });
             
-            if (!response.ok) continue;
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.text();
-        } catch(e) { continue; }
+        } catch (e) {
+            if (i === PROXIES.length - 1) {
+                const err = new Error('Не удалось подключиться');
+                err.debug = `Последняя ошибка: ${e.message}`;
+                throw err;
+            }
+        }
     }
-    throw new Error('Не удалось подключиться через прокси');
 }
 
 function extractSKU(html) {
-    const nuxtDataMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
-    if (!nuxtDataMatch) throw new Error('Данные товара не найдены');
+    const patterns = [
+        // Паттерн 1: Стандартный NUXT
+        /window\.__NUXT__\s*=\s*({.*?});/s,
+        
+        // Паттерн 2: JSON-LD данные
+        /"sku":\s*"(\d+)"/,
+        
+        // Паттерн 3: Встроенный JSON
+        /"sku_supplier":\s*"(\d+)"/,
+        
+        // Паттерн 4: Минифицированный JSON
+        /sku_supplier["']?:["']?(\d+)/,
+        
+        // Паттерн 5: URL параметры
+        /sku=(\d+)/,
+    ];
+
+    for (const regex of patterns) {
+        const match = html.match(regex);
+        if (match) {
+            try {
+                const json = regex.test(/^\{/) ? JSON.parse(match[1]) : null;
+                return json?.payload?.product?.sku_supplier || match[1];
+            } catch (e) {
+                return match[1];
+            }
+        }
+    }
     
-    const nuxtData = JSON.parse(nuxtDataMatch[1]);
-    const sku = nuxtData?.payload?.product?.sku_supplier;
-    
-    if (!sku) throw new Error('SKU Supplier не найден в данных');
-    return sku;
+    throw new Error('SKU не обнаружен в коде страницы');
+}
+
+function toggleDebugInfo() {
+    const debug = document.querySelector('.error-debug');
+    debug.style.display = debug.style.display === 'none' ? 'block' : 'none';
 }
