@@ -80,7 +80,7 @@ async function fetchHTML(url) {
                 continue;
             }
             return await response.text();
-        } catch(e) {
+        } catch (e) {
             lastError = e;
         } finally {
             clearTimeout(timeout);
@@ -90,21 +90,27 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Попытка извлечь JSON-структуру из window.__NUXT__
+    // Пытаемся извлечь JSON-структуру, содержащую __NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
             const data = JSON.parse(nuxtMatch[1]);
-            const skuSupplier = data?.payload?.product?.sku_supplier;
+            let skuSupplier;
+            // Первичная попытка: data.payload.product.sku_supplier
+            if (data?.payload?.product?.sku_supplier) {
+                skuSupplier = data.payload.product.sku_supplier;
+            }
+            // Если не найдено, пробуем альтернативную вложенность: data.payload.payload.product.sku_supplier
+            else if (data?.payload?.payload?.product?.sku_supplier) {
+                skuSupplier = data.payload.payload.product.sku_supplier;
+            }
             if (skuSupplier) return skuSupplier;
-        } catch(e) {
+        } catch (e) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
     // Резервный метод: поиск по строке "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
-    if (directMatch && directMatch[1]) {
-        return directMatch[1];
-    }
+    if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
 }
