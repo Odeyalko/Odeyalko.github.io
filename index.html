@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKU FINDER</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SKU FINDER</h1>
+            <div class="author">by Odeyalko</div>
+        </header>
+        
+        <div class="input-group">
+            <input type="url" 
+                   id="productUrl"
+                   placeholder="https://www.lamoda.ru/p/MP002XW1G0ZJ/...">
+            <button onclick="analyzeProduct()">
+                <span class="btn-text">Найти SKU</span>
+                <div class="loader"></div>
+            </button>
+        </div>
+
+        <div id="result" class="result-card">
+            <div class="result-content"></div>
+        </div>
+
+        <footer>
+            <a href="https://t.me/Odeyalko2" target="_blank" class="tg-link">
+                Поддержка: @Odeyalko2
+            </a>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
