@@ -18,15 +18,20 @@ async function analyzeProduct() {
 
     try {
         const userInput = inputElem.value.trim();
-        let url;
+        let url, originalSku;
         if (/^https?:\/\//i.test(userInput)) {
             // Введён полный URL
             if (!/^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]+\/.*$/i.test(userInput)) {
                 throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/');
             }
+            // Извлекаем SKU из URL для формирования ссылки на товар
+            const match = userInput.match(/\/p\/([a-zA-Z0-9]+)/i);
+            if (!match || !match[1]) throw new Error('SKU не найден в ссылке.');
+            originalSku = match[1];
             url = userInput;
         } else if (/^[a-zA-Z0-9]+$/i.test(userInput)) {
             // Введён только SKU → формируем URL
+            originalSku = userInput;
             url = `https://www.lamoda.ru/p/${userInput}/`;
         } else {
             throw new Error('Введён неверный формат. Введите полный URL или SKU, состоящий только из букв и цифр.');
@@ -34,11 +39,12 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        const productLink = `https://www.lamoda.ru/p/${skuSupplier}/`;
+        // Формируем ссылку для перехода используя оригинальный SKU, а не sku_supplier
+        const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
         resultElem.innerHTML = `
-            <div class="sku-value">${skuSupplier}</div>
+            <div class="sku-value">sku_supplier: ${skuSupplier}</div>
             <div class="sku-link"><a href="${productLink}" target="_blank">Перейти на товар</a></div>
         `;
     } catch (error) {
@@ -80,7 +86,7 @@ async function fetchHTML(url) {
                 continue;
             }
             return await response.text();
-        } catch (e) {
+        } catch(e) {
             lastError = e;
         } finally {
             clearTimeout(timeout);
@@ -90,7 +96,7 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Пытаемся извлечь JSON-структуру, содержащую __NUXT__
+    // Пытаемся извлечь JSON-структуру из window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
