@@ -1,3 +1,4 @@
+/* styles.css */
 :root {
     --primary: #2d3436;
     --accent: #0984e3;
@@ -139,24 +140,6 @@ button.loading .loader {
 .tg-link:hover {
     color: var(--accent);
 }
-.error-debug {
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    font-family: monospace;
-    font-size: 0.8rem;
-    white-space: pre-wrap;
-    color: #666;
-}
-
-.debug-btn {
-    background: none;
-    color: var(--accent);
-    padding: 8px 15px;
-    margin-top: 10px;
-    border: 1px solid var(--accent);
-}
 
 .sku-value {
     font-size: 2.2rem;
@@ -165,15 +148,11 @@ button.loading .loader {
     letter-spacing: 1px;
 }
 
-.sku-source {
-    color: #636e72;
-    margin-top: 10px;
-    font-size: 0.9rem;
+.error-message {
+    color: var(--error);
+    margin-bottom: 15px;
 }
 
-.manual-guide {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
+.manual-guide ol {
+    padding-left: 20px;
 }
