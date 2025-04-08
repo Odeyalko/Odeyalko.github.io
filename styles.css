@@ -108,15 +108,15 @@ button:active {
     background: #fff5f5;
 }
 
-/* Улучшенный спиннер */
+/* Новый, более эстетичный спиннер */
 .loader {
     display: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255,255,255,0.5);
-    border-top-color: #fff;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255,255,255,0.4);
+    border-top-color: #ffffff;
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -125,6 +125,11 @@ button:active {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 button.loading .btn-text {
@@ -193,4 +198,3 @@ button.loading .loader {
 .manual-guide li {
     margin-bottom: 8px;
 }
-
