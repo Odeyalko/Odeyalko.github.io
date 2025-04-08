@@ -1,4 +1,3 @@
-// app.js
 const PROXIES = [
     'https://corsproxy.io/?',
     'https://api.allorigins.win/raw?url=',
@@ -11,7 +10,7 @@ async function analyzeProduct() {
     const resultContent = document.querySelector('.result-content');
     const resultCard = document.getElementById('result');
     const btn = document.querySelector('button');
-    
+
     urlInput.disabled = true;
     btn.classList.add('loading');
     resultCard.className = 'result-card';
@@ -25,13 +24,12 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const sku = extractSKU(html);
-        
+
         resultCard.classList.add('success');
         resultContent.innerHTML = `
             <div class="sku-value">${sku}</div>
-            <div class="sku-source">Источник: Lamoda API</div>
+            <div class="sku-source">Источник: Lamoda (из исходного кода страницы)</div>
         `;
-
     } catch (error) {
         resultCard.classList.add('error');
         resultContent.innerHTML = `
@@ -39,10 +37,10 @@ async function analyzeProduct() {
             <div class="manual-guide">
                 <h3>Ручной поиск:</h3>
                 <ol>
-                    <li>Откройте DevTools (F12)</li>
-                    <li>Перейдите в Network → перезагрузите страницу</li>
-                    <li>Найдите запрос с названием товара</li>
-                    <li>Во вкладке Response найдите "sku_supplier"</li>
+                    <li>Откройте DevTools (F12).</li>
+                    <li>Перейдите на вкладку Network и обновите страницу.</li>
+                    <li>Найдите запрос, содержащий данные товара.</li>
+                    <li>В ответе (Response) ищите поле "<strong>sku_supplier</strong>".</li>
                 </ol>
             </div>
         `;
@@ -53,14 +51,15 @@ async function analyzeProduct() {
 }
 
 function isValidLamodaUrl(url) {
+    // Проверяем, что URL соответствует шаблону Lamoda
     return /^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]{10,}\//.test(url);
 }
 
 async function fetchHTML(url) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-
+    let lastError = null;
     for (const proxy of PROXIES) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
         try {
             const response = await fetch(proxy + encodeURIComponent(url), {
                 headers: {
@@ -70,35 +69,36 @@ async function fetchHTML(url) {
                 },
                 signal: controller.signal
             });
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.text();
-        } catch(e) {
-            if (proxy === PROXIES[PROXIES.length - 1]) {
-                throw new Error('Не удалось получить данные');
+            clearTimeout(timeout);
+            if (!response.ok) {
+                lastError = new Error(`HTTP ${response.status}`);
+                continue;
             }
+            return await response.text();
+        } catch (e) {
+            lastError = e;
         } finally {
             clearTimeout(timeout);
         }
     }
+    throw new Error('Не удалось получить данные с сайта Lamoda. ' + (lastError ? lastError.message : ''));
 }
 
 function extractSKU(html) {
-    // Поиск в JSON-структуре
+    // Поиск JSON-структуры, содержащей переменную __NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
             const data = JSON.parse(nuxtMatch[1]);
             const sku = data?.payload?.product?.sku_supplier;
             if (sku) return sku;
-        } catch(e) {
-            console.error('Ошибка парсинга JSON:', e);
+        } catch (e) {
+            console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-
-    // Резервный поиск
-    const directMatch = html.match(/"sku_supplier":\s*"(\d+)"/);
+    // Резервный поиск по строке "sku_supplier"
+    const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch) return directMatch[1];
 
-    throw new Error('SKU не найден в данных страницы');
+    throw new Error('Поле sku_supplier не найдено в данных страницы.');
 }
