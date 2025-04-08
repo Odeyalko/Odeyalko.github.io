@@ -1,11 +1,4 @@
-const PROXIES = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url=',
-    'https://webproxy.101011.xyz/',
-    'https://proxy.cors.sh/'
-];
-
-async function analyzeProduct() {
+function analyzeProduct() {
     const urlInput = document.getElementById('productUrl');
     const resultContent = document.querySelector('.result-content');
     const resultCard = document.getElementById('result');
@@ -17,18 +10,16 @@ async function analyzeProduct() {
     resultContent.innerHTML = '';
 
     try {
-        const url = urlInput.value.trim();
-        if (!isValidLamodaUrl(url)) {
-            throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/MP002XW1G0ZJ/...');
-        }
+        const input = urlInput.value.trim();
+        const sku = parseInput(input);
 
-        const html = await fetchHTML(url);
-        const sku = extractSKU(html);
+        // Формируем ссылку на товар по sku
+        const productLink = `https://www.lamoda.ru/p/${sku}/`;
 
         resultCard.classList.add('success');
         resultContent.innerHTML = `
             <div class="sku-value">${sku}</div>
-            <div class="sku-source">Источник: Lamoda (из исходного кода страницы)</div>
+            <div class="sku-link"><a href="${productLink}" target="_blank">Перейти на товар</a></div>
         `;
     } catch (error) {
         resultCard.classList.add('error');
@@ -37,10 +28,9 @@ async function analyzeProduct() {
             <div class="manual-guide">
                 <h3>Ручной поиск:</h3>
                 <ol>
-                    <li>Откройте DevTools (F12).</li>
-                    <li>Перейдите на вкладку Network и обновите страницу.</li>
-                    <li>Найдите запрос, содержащий данные товара.</li>
-                    <li>В ответе (Response) ищите поле "<strong>sku_supplier</strong>".</li>
+                    <li>Вводите полную ссылку вида:</li>
+                    <li>https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/</li>
+                    <li>или просто SKU (например, mp002xw05ezl).</li>
                 </ol>
             </div>
         `;
@@ -50,55 +40,28 @@ async function analyzeProduct() {
     }
 }
 
-function isValidLamodaUrl(url) {
-    // Проверяем, что URL соответствует шаблону Lamoda
-    return /^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]{10,}\//.test(url);
-}
-
-async function fetchHTML(url) {
-    let lastError = null;
-    for (const proxy of PROXIES) {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
-        try {
-            const response = await fetch(proxy + encodeURIComponent(url), {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-                    'Referer': 'https://www.lamoda.ru/',
-                    'Accept-Language': 'ru-RU,ru;q=0.9'
-                },
-                signal: controller.signal
-            });
-            clearTimeout(timeout);
-            if (!response.ok) {
-                lastError = new Error(`HTTP ${response.status}`);
-                continue;
-            }
-            return await response.text();
-        } catch (e) {
-            lastError = e;
-        } finally {
-            clearTimeout(timeout);
+/**
+ * Функция parseInput анализирует ввод:
+ * - Если это URL, извлекает SKU из URL.
+ * - Если это просто SKU (последовательность букв/цифр), возвращает его.
+ */
+function parseInput(input) {
+    // Если строка начинается с http:// или https://, считаем, что это URL.
+    if (/^https?:\/\//i.test(input)) {
+        // Проверяем, что URL соответствует формату Lamoda.
+        if (!/^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]+\/.+/i.test(input)) {
+            throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/');
         }
-    }
-    throw new Error('Не удалось получить данные с сайта Lamoda. ' + (lastError ? lastError.message : ''));
-}
-
-function extractSKU(html) {
-    // Поиск JSON-структуры, содержащей переменную __NUXT__
-    const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
-    if (nuxtMatch) {
-        try {
-            const data = JSON.parse(nuxtMatch[1]);
-            const sku = data?.payload?.product?.sku_supplier;
-            if (sku) return sku;
-        } catch (e) {
-            console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
+        const match = input.match(/\/p\/([a-zA-Z0-9]+)\//i);
+        if (match && match[1]) {
+            return match[1];
         }
+        throw new Error('SKU не найден в ссылке.');
+    } else {
+        // Если введённая строка не URL, проверяем соответствует ли она формату SKU.
+        if (/^[a-zA-Z0-9]+$/.test(input)) {
+            return input;
+        }
+        throw new Error('Введён неверный формат. Введите полный URL или SKU, состоящий только из букв и цифр.');
     }
-    // Резервный поиск по строке "sku_supplier"
-    const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
-    if (directMatch) return directMatch[1];
-
-    throw new Error('Поле sku_supplier не найдено в данных страницы.');
 }
