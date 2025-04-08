@@ -20,17 +20,16 @@ async function analyzeProduct() {
         const userInput = inputElem.value.trim();
         let url, originalSku;
         if (/^https?:\/\//i.test(userInput)) {
-            // Введён полный URL
+            // Введён полный URL.
             if (!/^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]+\/.*$/i.test(userInput)) {
                 throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/');
             }
-            // Извлекаем SKU из URL для формирования ссылки на товар
             const match = userInput.match(/\/p\/([a-zA-Z0-9]+)/i);
             if (!match || !match[1]) throw new Error('SKU не найден в ссылке.');
             originalSku = match[1];
             url = userInput;
         } else if (/^[a-zA-Z0-9]+$/i.test(userInput)) {
-            // Введён только SKU → формируем URL
+            // Введён только SKU → формируем URL.
             originalSku = userInput;
             url = `https://www.lamoda.ru/p/${userInput}/`;
         } else {
@@ -39,12 +38,12 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формируем ссылку для перехода используя оригинальный SKU, а не sku_supplier
+        // Формируем ссылку для перехода используя оригинальный SKU.
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
         resultElem.innerHTML = `
-            <div class="sku-value">sku_supplier: ${skuSupplier}</div>
+            <div class="sku-value">${skuSupplier}</div>
             <div class="sku-link"><a href="${productLink}" target="_blank">Перейти на товар</a></div>
         `;
     } catch (error) {
@@ -96,17 +95,17 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Пытаемся извлечь JSON-структуру из window.__NUXT__
+    // Ищем JSON-структуру, содержащую window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
             const data = JSON.parse(nuxtMatch[1]);
             let skuSupplier;
-            // Первичная попытка: data.payload.product.sku_supplier
+            // Основная попытка: data.payload.product.sku_supplier
             if (data?.payload?.product?.sku_supplier) {
                 skuSupplier = data.payload.product.sku_supplier;
             }
-            // Если не найдено, пробуем альтернативную вложенность: data.payload.payload.product.sku_supplier
+            // Альтернативная попытка: data.payload.payload.product.sku_supplier
             else if (data?.payload?.payload?.product?.sku_supplier) {
                 skuSupplier = data.payload.payload.product.sku_supplier;
             }
@@ -115,7 +114,7 @@ function extractSKU(html) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-    // Резервный метод: поиск по строке "sku_supplier"
+    // Резервный метод — поиск строки "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
