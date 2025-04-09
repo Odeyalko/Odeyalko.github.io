@@ -1,8 +1,8 @@
 const PROXIES = [
-  "https://proxy.jf.io/?url=",
-  "https://cors-proxy.gametools.network/?",
-  "https://s2r-proxy.herokuapp.com/?url=",
-  "https://api.allorigins.hexocode.repl.co/raw?url="
+    "https://cors-anywhere.herokuapp.com/",
+    "https://cors-proxy.olivietch.me/?",
+    "https://jsproxy.proxysite.live/?",
+    "https://jsproxy.herokuapp.com/?"
 ];
 
 async function analyzeProduct() {
