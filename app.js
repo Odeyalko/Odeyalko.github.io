@@ -38,7 +38,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Ссылка для перехода формируется по исходному SKU
+        // Формирование ссылки для перехода по исходному SKU
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -73,11 +73,15 @@ async function fetchHTML(url) {
         try {
             const response = await fetch(proxy + encodeURIComponent(url), {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.102 Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                     'Referer': 'https://www.lamoda.ru/',
+                    'Origin': 'https://www.lamoda.ru',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language': 'ru-RU,ru;q=0.9',
-                    'Cache-Control': 'no-cache'
+                    'Cache-Control': 'no-cache',
+                    'sec-ch-ua': `"Chromium";v="115", "Not A;Brand";v="24", "Google Chrome";v="115"`,
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"'
                 },
                 signal: controller.signal
             });
@@ -97,7 +101,7 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Пытаемся извлечь JSON-структуру из window.__NUXT__
+    // Ищем JSON, содержащий window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
@@ -113,7 +117,7 @@ function extractSKU(html) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-    // Резервный поиск по строке "sku_supplier"
+    // Резервный метод — поиск по строке "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
