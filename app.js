@@ -38,7 +38,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формирование ссылки для перехода по исходному SKU
+        // Формируем ссылку для перехода по исходному SKU
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -117,7 +117,7 @@ function extractSKU(html) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-    // Резервный метод — поиск по строке "sku_supplier"
+    // Резервный поиск по строке "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
