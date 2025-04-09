@@ -1,8 +1,5 @@
 // Новый список прокси-серверов:
-const PROXIES = [
-  "https://cors.bridged.cc/?",
-  "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url="
-];
+const proxyBase = 'https://kek-ct2.pages.dev/?url=';
 
 document.getElementById('analyzeBtn').addEventListener('click', async () => {
   const inputElem = document.getElementById('productUrl');
