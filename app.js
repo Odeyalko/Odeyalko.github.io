@@ -51,7 +51,7 @@ async function analyzeProduct() {
         resultElem.innerHTML = `
             <div class="error-message">${error.message}</div>
             <div class="manual-guide">
-                <h3>Ручной поиск:</h3>
+                <h3>Сделайте следующие:</h3>
                 <ol>
                     <li>Введите полную ссылку вида:</li>
                     <li>https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/</li>
