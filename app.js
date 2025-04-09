@@ -1,5 +1,5 @@
 const PROXIES = [
-  "https://api.allorigins.hexocode.repl.co/raw?url=",
+  "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=",
   "https://thingproxy.freeboard.io/fetch/",
   "https://yacdn.org/proxy/"
 ];
@@ -37,7 +37,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формируем ссылку для перехода по исходному SKU
+        // Формирование ссылки для перехода по исходному SKU
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -90,9 +90,17 @@ async function fetchHTML(url) {
                 lastError = new Error(`HTTP ${response.status}`);
                 continue;
             }
-            if (response.type === "opaque") {
-                throw new Error("Получен opaque-ответ. Попробуйте другой прокси или серверный прокси.");
+            // Если получен ответ в формате JSON (например, от AllOrigins)
+            const contentType = response.headers.get("Content-Type") || "";
+            if (contentType.includes("application/json")) {
+                const json = await response.json();
+                if (json && json.contents) {
+                    return json.contents;
+                } else {
+                    throw new Error("Неверный формат JSON-ответа");
+                }
             }
+            // Иначе возвращаем обычный текстовый ответ
             return await response.text();
         } catch(e) {
             lastError = e;
@@ -104,7 +112,7 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Ищем JSON, содержащий window.__NUXT__
+    // Ищем JSON-структуру, содержащую window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
