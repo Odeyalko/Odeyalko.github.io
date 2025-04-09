@@ -43,15 +43,9 @@ h1 {
     margin-bottom: 8px;
 }
 
-.author a {
+.author {
     color: #636e72;
     font-size: 0.9rem;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.author a:hover {
-    color: var(--accent);
 }
 
 .input-group {
