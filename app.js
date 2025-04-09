@@ -1,4 +1,4 @@
-const proxyUrl = 'https://lamoda-proxy.onrender.com/proxy?url=' + encodeURIComponent(lamodaUrl);
+const proxyUrl = 'https://odeyalko-proxy.onrender.com/proxy?url=' + encodeURIComponent(lamodaUrl);
 
 async function analyzeProduct() {
     const inputElem = document.getElementById('productUrl');
