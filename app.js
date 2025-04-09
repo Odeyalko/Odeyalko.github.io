@@ -1,7 +1,8 @@
 const PROXIES = [
-  "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=",
-  "https://thingproxy.freeboard.io/fetch/",
-  "https://yacdn.org/proxy/"
+    'https://corsproxy.io/?',
+    'https://api.allorigins.win/raw?url=',
+    'https://webproxy.101011.xyz/',
+    'https://proxy.cors.sh/'
 ];
 
 async function analyzeProduct() {
@@ -19,7 +20,7 @@ async function analyzeProduct() {
         const userInput = inputElem.value.trim();
         let url, originalSku;
         if (/^https?:\/\//i.test(userInput)) {
-            // Пользователь ввёл полный URL
+            // Введён полный URL.
             if (!/^https?:\/\/www\.lamoda\.ru\/p\/[a-zA-Z0-9]+\/.*$/i.test(userInput)) {
                 throw new Error('Некорректная ссылка!\nПример: https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/');
             }
@@ -28,7 +29,7 @@ async function analyzeProduct() {
             originalSku = match[1];
             url = userInput;
         } else if (/^[a-zA-Z0-9]+$/i.test(userInput)) {
-            // Пользователь ввёл только SKU
+            // Введён только SKU → формируем URL.
             originalSku = userInput;
             url = `https://www.lamoda.ru/p/${userInput}/`;
         } else {
@@ -37,7 +38,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формирование ссылки для перехода по исходному SKU
+        // Формируем ссылку для перехода используя оригинальный SKU.
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -50,7 +51,7 @@ async function analyzeProduct() {
         resultElem.innerHTML = `
             <div class="error-message">${error.message}</div>
             <div class="manual-guide">
-                <h3>Сделайте следующие:</h3>
+                <h3>Ручной поиск:</h3>
                 <ol>
                     <li>Введите полную ссылку вида:</li>
                     <li>https://www.lamoda.ru/p/mp002xw05ezl/clothes-laurbaperson-futbolka/</li>
@@ -71,17 +72,10 @@ async function fetchHTML(url) {
         const timeout = setTimeout(() => controller.abort(), 15000);
         try {
             const response = await fetch(proxy + encodeURIComponent(url), {
-                mode: 'cors',
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
                     'Referer': 'https://www.lamoda.ru/',
-                    'Origin': 'https://www.lamoda.ru',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'ru-RU,ru;q=0.9',
-                    'Cache-Control': 'no-cache',
-                    'sec-ch-ua': `"Chromium";v="115", "Not A;Brand";v="24", "Google Chrome";v="115"`,
-                    'sec-ch-ua-mobile': '?0',
-                    'sec-ch-ua-platform': '"Windows"'
+                    'Accept-Language': 'ru-RU,ru;q=0.9'
                 },
                 signal: controller.signal
             });
@@ -90,17 +84,6 @@ async function fetchHTML(url) {
                 lastError = new Error(`HTTP ${response.status}`);
                 continue;
             }
-            // Если получен ответ в формате JSON (например, от AllOrigins)
-            const contentType = response.headers.get("Content-Type") || "";
-            if (contentType.includes("application/json")) {
-                const json = await response.json();
-                if (json && json.contents) {
-                    return json.contents;
-                } else {
-                    throw new Error("Неверный формат JSON-ответа");
-                }
-            }
-            // Иначе возвращаем обычный текстовый ответ
             return await response.text();
         } catch(e) {
             lastError = e;
@@ -118,9 +101,12 @@ function extractSKU(html) {
         try {
             const data = JSON.parse(nuxtMatch[1]);
             let skuSupplier;
+            // Основная попытка: data.payload.product.sku_supplier
             if (data?.payload?.product?.sku_supplier) {
                 skuSupplier = data.payload.product.sku_supplier;
-            } else if (data?.payload?.payload?.product?.sku_supplier) {
+            }
+            // Альтернативная попытка: data.payload.payload.product.sku_supplier
+            else if (data?.payload?.payload?.product?.sku_supplier) {
                 skuSupplier = data.payload.payload.product.sku_supplier;
             }
             if (skuSupplier) return skuSupplier;
@@ -128,8 +114,9 @@ function extractSKU(html) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-    // Резервный метод – поиск по строке "sku_supplier"
+    // Резервный метод — поиск строки "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
 }
+
