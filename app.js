@@ -1,6 +1,8 @@
 const PROXIES = [
-    'https://api.allorigins.win/raw?url=',
-    'https://webproxy.101011.xyz/',
+    "https://cors-anywhere.herokuapp.com/",
+    "https://cors-proxy.olivietch.me/?",
+    "https://jsproxy.proxysite.live/?",
+    "https://jsproxy.herokuapp.com/?"
 ];
 
 async function analyzeProduct() {
