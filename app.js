@@ -1,8 +1,4 @@
-const PROXIES = [
-  "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=",
-  "https://thingproxy.freeboard.io/fetch/",
-  "https://yacdn.org/proxy/"
-];
+const proxyUrl = 'https://lamoda-proxy.onrender.com/proxy?url=' + encodeURIComponent(lamodaUrl);
 
 async function analyzeProduct() {
     const inputElem = document.getElementById('productUrl');
