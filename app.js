@@ -1,8 +1,8 @@
 const PROXIES = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url=',
-    'https://webproxy.101011.xyz/',
-    'https://proxy.cors.sh/'
+    'https://thingproxy.freeboard.io/fetch/',
+    'https://api.allorigins.hexocode.repl.co/raw?url=',
+    'https://yacdn.org/proxy/',
+    'https://cors.bridged.cc/'
 ];
 
 async function analyzeProduct() {
