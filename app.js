@@ -1,8 +1,7 @@
 const PROXIES = [
-    "https://cors-anywhere.herokuapp.com/",
-    "https://cors-proxy.olivietch.me/?",
-    "https://jsproxy.proxysite.live/?",
-    "https://jsproxy.herokuapp.com/?"
+  "https://api.allorigins.hexocode.repl.co/raw?url=",
+  "https://thingproxy.freeboard.io/fetch/",
+  "https://yacdn.org/proxy/"
 ];
 
 async function analyzeProduct() {
@@ -38,7 +37,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формирование ссылки для перехода по исходному SKU
+        // Формируем ссылку для перехода по исходному SKU
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -72,6 +71,7 @@ async function fetchHTML(url) {
         const timeout = setTimeout(() => controller.abort(), 15000);
         try {
             const response = await fetch(proxy + encodeURIComponent(url), {
+                mode: 'cors',
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
                     'Referer': 'https://www.lamoda.ru/',
@@ -79,7 +79,6 @@ async function fetchHTML(url) {
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language': 'ru-RU,ru;q=0.9',
                     'Cache-Control': 'no-cache',
-                    // Дополнительные заголовки для имитации реального запроса
                     'sec-ch-ua': `"Chromium";v="115", "Not A;Brand";v="24", "Google Chrome";v="115"`,
                     'sec-ch-ua-mobile': '?0',
                     'sec-ch-ua-platform': '"Windows"'
@@ -90,6 +89,9 @@ async function fetchHTML(url) {
             if (!response.ok) {
                 lastError = new Error(`HTTP ${response.status}`);
                 continue;
+            }
+            if (response.type === "opaque") {
+                throw new Error("Получен opaque-ответ. Попробуйте другой прокси или серверный прокси.");
             }
             return await response.text();
         } catch(e) {
@@ -102,7 +104,7 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Ищем JSON-структуру, содержащую window.__NUXT__
+    // Ищем JSON, содержащий window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
@@ -118,7 +120,7 @@ function extractSKU(html) {
             console.error('Ошибка парсинга JSON из window.__NUXT__:', e);
         }
     }
-    // Резервный поиск по строке "sku_supplier"
+    // Резервный метод – поиск по строке "sku_supplier"
     const directMatch = html.match(/"sku_supplier":\s*"([^"]+)"/);
     if (directMatch && directMatch[1]) return directMatch[1];
     throw new Error('Поле sku_supplier не найдено в данных страницы.');
