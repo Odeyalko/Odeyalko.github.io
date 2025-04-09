@@ -3,26 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Поиск Арт. Партнёра</title>
-  <link rel="stylesheet" href="style.css">
+  <title>SKU Finder</title>
+  <!-- Файл favicon (имя файла чувствительно к регистру) -->
   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
-    <h1>Поиск Арт. Партнёра</h1>
-    <p class="description">Сделайте следующее:</p>
-    <input id="productUrl" type="text" placeholder="Введите ссылку на товар">
-    <button id="analyzeBtn">Найти Арт. Партнёра</button>
-
+    <header>
+      <h1>SKU Finder</h1>
+      <div class="author">by Odeyalko</div>
+    </header>
+    
+    <div class="input-group">
+      <input type="text" id="productUrl" placeholder="Введите ссылку или SKU (например, mp002xw05ezl)">
+      <button id="analyzeBtn">Найти Арт. Партнёра</button>
+    </div>
+    
     <div id="loading" class="spinner hidden"></div>
-    <div id="result"></div>
-
+    
+    <div id="result" class="result-card">
+      <div class="result-content"></div>
+    </div>
+    
     <footer>
-      <p>Автор: <span class="author">by odeyalko</span></p>
+      <div class="tips">
+        <a href="https://pay.cloudtips.ru/p/d2ad7f9c" target="_blank">Оставить чаевые</a>
+      </div>
     </footer>
   </div>
-
+  
   <script src="app.js"></script>
 </body>
 </html>
-
