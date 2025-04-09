@@ -1,8 +1,6 @@
 const PROXIES = [
-    'https://corsproxy.io/?',
     'https://api.allorigins.win/raw?url=',
     'https://webproxy.101011.xyz/',
-    'https://proxy.cors.sh/'
 ];
 
 async function analyzeProduct() {
