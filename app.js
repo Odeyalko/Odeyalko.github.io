@@ -1,8 +1,8 @@
 const PROXIES = [
     'https://thingproxy.freeboard.io/fetch/',
-    'https://api.allorigins.hexocode.repl.co/raw?url=',
+    'https://cors-anywhere.herokuapp.com/',
     'https://yacdn.org/proxy/',
-    'https://cors.bridged.cc/'
+    'https://api.allorigins.hexocode.repl.co/raw?url='
 ];
 
 async function analyzeProduct() {
@@ -38,7 +38,7 @@ async function analyzeProduct() {
 
         const html = await fetchHTML(url);
         const skuSupplier = extractSKU(html);
-        // Формируем ссылку для перехода по исходному SKU
+        // Формирование ссылки для перехода по исходному SKU
         const productLink = `https://www.lamoda.ru/p/${originalSku}/`;
 
         resultCard.classList.add('success');
@@ -79,6 +79,7 @@ async function fetchHTML(url) {
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language': 'ru-RU,ru;q=0.9',
                     'Cache-Control': 'no-cache',
+                    // Дополнительные заголовки для имитации реального запроса
                     'sec-ch-ua': `"Chromium";v="115", "Not A;Brand";v="24", "Google Chrome";v="115"`,
                     'sec-ch-ua-mobile': '?0',
                     'sec-ch-ua-platform': '"Windows"'
@@ -101,7 +102,7 @@ async function fetchHTML(url) {
 }
 
 function extractSKU(html) {
-    // Ищем JSON, содержащий window.__NUXT__
+    // Ищем JSON-структуру, содержащую window.__NUXT__
     const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({.*?});/s);
     if (nuxtMatch) {
         try {
