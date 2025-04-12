@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Axapta Unloaded Orders Export</title>
+  <!-- Подключение favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Подключение CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Axapta Unloaded Orders Export</h1>
+    <p class="byline">by Odeyalko</p>
+  </header>
+
+  <main>
+    <section class="input-section">
+      <h2>Вставьте заказы из файла №1</h2>
+      <textarea id="input1" placeholder="Вставьте заказы сюда..."></textarea>
+    </section>
+    
+    <section class="input-section">
+      <h2>Вставьте заказы из файла №2</h2>
+      <textarea id="input2" placeholder="Вставьте заказы сюда..."></textarea>
+    </section>
+
+    <section class="action-section">
+      <button id="processBtn">Обработать заказы</button>
+    </section>
+
+    <section class="output-section">
+      <h2>Уникальные заказы</h2>
+      <textarea id="output" readonly placeholder="Здесь появятся уникальные заказы..."></textarea>
+      <button id="copyBtn">Скопировать все заказы</button>
+    </section>
+  </main>
+
+  <!-- Подключение JS -->
+  <script src="script.js"></script>
+</body>
+</html>

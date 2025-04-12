@@ -1,0 +1,75 @@
+/* Обнуление отступов и базовые стили */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  color: #333;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* Шапка сайта */
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.byline {
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+/* Секции ввода и вывода */
+.input-section, .output-section {
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 10px;
+  color: #34495e;
+}
+
+/* Стили для textarea */
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 10px;
+  resize: vertical;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 1em;
+  background-color: #fff;
+}
+
+/* Кнопки */
+button {
+  padding: 10px 20px;
+  font-size: 1em;
+  background-color: #2980b9;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #1c5980;
+}
+
+/* Центровка кнопки обработки */
+.action-section {
+  text-align: center;
+  margin-bottom: 30px;
